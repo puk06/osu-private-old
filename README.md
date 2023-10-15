@@ -57,3 +57,16 @@ osu! PP calculator for offline users that works in an offline environment 🚀
   - 1000%このソフトがウイルスでは無いことを保証します。絶対です。コードもとても短いので、心配であればチェックしてください！主なコードとして、osu!private.js、mainForm.cs、registrationForm.cs、Program.csの4つが挙げられます。
   - もし怖すぎて心配という方は、自分でビルドするのが良いと思います。Visual Studioなどを使えば簡単にビルドが可能です！
 
+# Dependencies
+- rosu-pp-js
+  - Github : https://github.com/MaxOhn/rosu-pp-js
+  - User : [MaxOhn](https://github.com/MaxOhn)
+  - Lisence : [MIT License](https://github.com/MaxOhn/rosu-pp-js/blob/main/LICENSE)https://github.com/MaxOhn/rosu-pp-js/blob/main/LICENSE
+
+- Gosumemory
+  - Github : https://github.com/l3lackShark/gosumemory
+  - User : [l3lackShark](https://github.com/l3lackShark)
+  - Lisence : [GNU General Public License v3.0](https://github.com/l3lackShark/gosumemory/blob/master/LICENSE)
+
+- gosumemory
+
