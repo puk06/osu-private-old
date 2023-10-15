@@ -1,3 +1,5 @@
+<img src="https://github.com/puk06/osu-private/assets/86549420/e06c137b-d802-4995-a106-1991730e9879" width="1000">
+
 # osu!Private
 オフライン環境で動くオフラインユーザー向けのosu! PP計算機です！
 
