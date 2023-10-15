@@ -70,6 +70,7 @@ async function main(username) {
                     if (!fs.existsSync("./src/user/" + username + ".json")) {
                         fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify({
                             "username": username,
+                            "lastGamemode" : 0,
                             "globalPP": {
                                 "osu": 0,
                                 "taiko": 0,
@@ -127,6 +128,7 @@ async function main(username) {
                     json.bonusPP[mode] = bonusPP;
                     json.globalPP[mode] = globalPP;
                     json.globalACC[mode] = globalACC;
+                    json.lastGamemode = currentMode;
                     fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
                 }
                 currentStatus = response.data.menu.state;
