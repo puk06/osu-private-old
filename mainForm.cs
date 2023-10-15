@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,9 +14,27 @@ namespace osu_private
         public static Process gosumemory;
         public static bool gosumemoryLaunched;
         public static string username;
-        public static double globalPP;
-        public static double globalACC;
-        public static double bonusPP;
+        public static Dictionary<string, double> globalPP = new Dictionary<string, double>()
+        {
+            {"osu", 0},
+            {"taiko", 0},
+            {"catch", 0},
+            {"mania", 0}
+        };
+        public static Dictionary<string, double> globalACC = new Dictionary<string, double>()
+        {
+            {"osu", 0},
+            {"taiko", 0},
+            {"catch", 0},
+            {"mania", 0}
+        };
+        public static Dictionary<string, double> bonusPP = new Dictionary<string, double>()
+        {
+            {"osu", 0},
+            {"taiko", 0},
+            {"catch", 0},
+            {"mania", 0}
+        };
         private DateTime lastWriteTime;
         private static bool firstLaunch = true;
         public mainForm(string username)
@@ -33,9 +52,18 @@ namespace osu_private
                 globalPPValue.Text = Math.Round((double)userdataJson["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
                 accValue.Text = Math.Round((double)userdataJson["globalACC"][convertMode(modeValue.Text)], 2) + "%";
                 BonusPPValue.Text = Math.Round((double)userdataJson["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
-                globalPP = (double)userdataJson["globalPP"][convertMode(modeValue.Text)];
-                globalACC = (double)userdataJson["globalACC"][convertMode(modeValue.Text)];
-                bonusPP = (double)userdataJson["bonusPP"][convertMode(modeValue.Text)];
+                globalPP["osu"] = (double)userdataJson["globalPP"]["osu"];
+                globalPP["taiko"] = (double)userdataJson["globalPP"]["taiko"];
+                globalPP["catch"] = (double)userdataJson["globalPP"]["catch"];
+                globalPP["mania"] = (double)userdataJson["globalPP"]["mania"];
+                globalACC["osu"] = (double)userdataJson["globalACC"]["osu"];
+                globalACC["taiko"] = (double)userdataJson["globalACC"]["taiko"];
+                globalACC["catch"] = (double)userdataJson["globalACC"]["catch"];
+                globalACC["mania"] = (double)userdataJson["globalACC"]["mania"];
+                bonusPP["osu"] = (double)userdataJson["bonusPP"]["osu"];
+                bonusPP["taiko"] = (double)userdataJson["bonusPP"]["taiko"];
+                bonusPP["catch"] = (double)userdataJson["bonusPP"]["catch"];
+                bonusPP["mania"] = (double)userdataJson["bonusPP"]["mania"];
             }
             catch (Exception)
             {
@@ -66,6 +94,7 @@ namespace osu_private
                         string userdataStringRecent = userdataRecent.ReadToEnd();
                         userdataRecent.Close();
                         JObject userdataJsonRecent = JObject.Parse(userdataStringRecent);
+                        modeValue.SelectedIndex = (int)userdataJsonRecent["lastGamemode"];
                         globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
                         accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)], 2) + "%";
                         BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
@@ -120,15 +149,24 @@ namespace osu_private
                             listBox1.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["pp"]}pp");
                             listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                         }
-                        changePPValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP, 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP, 2))}pp";
-                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP, 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        changeACCValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC, 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC, 2))}%";
-                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC, 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        changeBonusPPValue.Text = $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP, 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP, 2))}pp";
-                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP, 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        globalPP = (double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)];
-                        globalACC = (double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)];
-                        bonusPP = (double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)];
+                        changePPValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2))}pp";
+                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                        changeACCValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2))}%";
+                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                        changeBonusPPValue.Text = $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2))}pp";
+                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                        globalPP["osu"] = (double)userdataJsonRecent["globalPP"]["osu"];
+                        globalPP["taiko"] = (double)userdataJsonRecent["globalPP"]["taiko"];
+                        globalPP["catch"] = (double)userdataJsonRecent["globalPP"]["catch"];
+                        globalPP["mania"] = (double)userdataJsonRecent["globalPP"]["mania"];
+                        globalACC["osu"] = (double)userdataJsonRecent["globalACC"]["osu"];
+                        globalACC["taiko"] = (double)userdataJsonRecent["globalACC"]["taiko"];
+                        globalACC["catch"] = (double)userdataJsonRecent["globalACC"]["catch"];
+                        globalACC["mania"] = (double)userdataJsonRecent["globalACC"]["mania"];
+                        bonusPP["osu"] = (double)userdataJsonRecent["bonusPP"]["osu"];
+                        bonusPP["taiko"] = (double)userdataJsonRecent["bonusPP"]["taiko"];
+                        bonusPP["catch"] = (double)userdataJsonRecent["bonusPP"]["catch"];
+                        bonusPP["mania"] = (double)userdataJsonRecent["bonusPP"]["mania"];
 
                         Timer timer = new Timer();
                         timer.Interval = 5000;
@@ -251,6 +289,9 @@ namespace osu_private
         {
             try
             {
+                changePPValue.Text = "";
+                changeACCValue.Text = "";
+                changeBonusPPValue.Text = "";
                 StreamReader userdataRecent = new StreamReader($"./src/user/{username}.json");
                 string userdataStringRecent = userdataRecent.ReadToEnd();
                 userdataRecent.Close();
@@ -264,10 +305,9 @@ namespace osu_private
                     listBox1.Items.Add("No plays.");
                     return;
                 }
-                else
-                {
-                    listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
-                }
+
+                listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
+                
                 for (int i = 0; i < userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count(); i++)
                 {
                     string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["title"]}";
@@ -308,9 +348,6 @@ namespace osu_private
                     listBox1.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["pp"]}pp");
                     listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                 }
-                globalPP = (double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)];
-                globalACC = (double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)];
-                bonusPP = (double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)];
             }
             catch (Exception)
             {
