@@ -1,4 +1,4 @@
-# osu!Private
+### osu!Private
 オフライン環境で動くオフラインユーザー向けのosu! PP計算機です！
 
 osu! PP calculator for offline users that works in an offline environment 🚀
