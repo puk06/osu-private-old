@@ -3,6 +3,9 @@
 
 osu! PP calculator for offline users that works in an offline environment 🚀
 
+# ScreenShot
+![](https://github.com/puk06/osu-private/assets/86549420/5d83d44b-5b16-4e31-913b-c40aae19d9dd)
+
 # How to use(JP)
 1. **ユーザー名を入力する**
     *  ユーザー名について
