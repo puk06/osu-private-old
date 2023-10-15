@@ -1,0 +1,215 @@
+﻿namespace osu_private
+{
+    partial class mainForm
+    {
+        /// <summary>
+        /// 必要なデザイナー変数です。
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// 使用中のリソースをすべてクリーンアップします。
+        /// </summary>
+        /// <param name="disposing">マネージド リソースを破棄する場合は true を指定し、その他の場合は false を指定します。</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows フォーム デザイナーで生成されたコード
+
+        /// <summary>
+        /// デザイナー サポートに必要なメソッドです。このメソッドの内容を
+        /// コード エディターで変更しないでください。
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
+            this.accText = new System.Windows.Forms.Label();
+            this.ppText = new System.Windows.Forms.Label();
+            this.bonusPPText = new System.Windows.Forms.Label();
+            this.accValue = new System.Windows.Forms.Label();
+            this.globalPPValue = new System.Windows.Forms.Label();
+            this.BonusPPValue = new System.Windows.Forms.Label();
+            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.modeValue = new System.Windows.Forms.ComboBox();
+            this.changePPValue = new System.Windows.Forms.Label();
+            this.changeACCValue = new System.Windows.Forms.Label();
+            this.changeBonusPPValue = new System.Windows.Forms.Label();
+            this.SuspendLayout();
+            // 
+            // accText
+            // 
+            this.accText.AutoSize = true;
+            this.accText.Font = new System.Drawing.Font("メイリオ", 16.25F);
+            this.accText.Location = new System.Drawing.Point(320, 54);
+            this.accText.Name = "accText";
+            this.accText.Size = new System.Drawing.Size(76, 33);
+            this.accText.TabIndex = 0;
+            this.accText.Text = "ACC :";
+            // 
+            // ppText
+            // 
+            this.ppText.AutoSize = true;
+            this.ppText.Font = new System.Drawing.Font("メイリオ", 16.25F);
+            this.ppText.Location = new System.Drawing.Point(14, 54);
+            this.ppText.Name = "ppText";
+            this.ppText.Size = new System.Drawing.Size(124, 33);
+            this.ppText.TabIndex = 1;
+            this.ppText.Text = "GlobalPP :";
+            // 
+            // bonusPPText
+            // 
+            this.bonusPPText.AutoSize = true;
+            this.bonusPPText.Font = new System.Drawing.Font("メイリオ", 16.25F);
+            this.bonusPPText.Location = new System.Drawing.Point(548, 54);
+            this.bonusPPText.Name = "bonusPPText";
+            this.bonusPPText.Size = new System.Drawing.Size(124, 33);
+            this.bonusPPText.TabIndex = 2;
+            this.bonusPPText.Text = "BonusPP :";
+            // 
+            // accValue
+            // 
+            this.accValue.AutoSize = true;
+            this.accValue.Font = new System.Drawing.Font("メイリオ", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accValue.Location = new System.Drawing.Point(390, 48);
+            this.accValue.Name = "accValue";
+            this.accValue.Size = new System.Drawing.Size(63, 41);
+            this.accValue.TabIndex = 3;
+            this.accValue.Text = "0%";
+            // 
+            // globalPPValue
+            // 
+            this.globalPPValue.AutoSize = true;
+            this.globalPPValue.Font = new System.Drawing.Font("メイリオ", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.globalPPValue.Location = new System.Drawing.Point(131, 48);
+            this.globalPPValue.Name = "globalPPValue";
+            this.globalPPValue.Size = new System.Drawing.Size(67, 41);
+            this.globalPPValue.TabIndex = 4;
+            this.globalPPValue.Text = "0pp";
+            // 
+            // BonusPPValue
+            // 
+            this.BonusPPValue.AutoSize = true;
+            this.BonusPPValue.Font = new System.Drawing.Font("メイリオ", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BonusPPValue.Location = new System.Drawing.Point(667, 48);
+            this.BonusPPValue.Name = "BonusPPValue";
+            this.BonusPPValue.Size = new System.Drawing.Size(67, 41);
+            this.BonusPPValue.TabIndex = 5;
+            this.BonusPPValue.Text = "0pp";
+            // 
+            // listBox1
+            // 
+            this.listBox1.Font = new System.Drawing.Font("メイリオ", 9.7F);
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.ItemHeight = 20;
+            this.listBox1.Location = new System.Drawing.Point(16, 121);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(848, 544);
+            this.listBox1.TabIndex = 6;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("メイリオ", 16.25F);
+            this.label1.Location = new System.Drawing.Point(20, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(96, 33);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "MODE :";
+            // 
+            // modeValue
+            // 
+            this.modeValue.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.modeValue.Font = new System.Drawing.Font("メイリオ", 12F);
+            this.modeValue.FormattingEnabled = true;
+            this.modeValue.Items.AddRange(new object[] {
+            "osu!standard",
+            "osu!taiko",
+            "osu!catch",
+            "osu!mania"});
+            this.modeValue.Location = new System.Drawing.Point(122, 10);
+            this.modeValue.Name = "modeValue";
+            this.modeValue.Size = new System.Drawing.Size(197, 32);
+            this.modeValue.TabIndex = 8;
+            this.modeValue.SelectedIndexChanged += new System.EventHandler(this.modeValue_SelectedIndexChanged);
+            // 
+            // changePPValue
+            // 
+            this.changePPValue.AutoSize = true;
+            this.changePPValue.Font = new System.Drawing.Font("メイリオ", 12F);
+            this.changePPValue.Location = new System.Drawing.Point(134, 87);
+            this.changePPValue.Name = "changePPValue";
+            this.changePPValue.Size = new System.Drawing.Size(0, 24);
+            this.changePPValue.TabIndex = 9;
+            // 
+            // changeACCValue
+            // 
+            this.changeACCValue.AutoSize = true;
+            this.changeACCValue.Font = new System.Drawing.Font("メイリオ", 12F);
+            this.changeACCValue.Location = new System.Drawing.Point(393, 87);
+            this.changeACCValue.Name = "changeACCValue";
+            this.changeACCValue.Size = new System.Drawing.Size(0, 24);
+            this.changeACCValue.TabIndex = 10;
+            // 
+            // changeBonusPPValue
+            // 
+            this.changeBonusPPValue.AutoSize = true;
+            this.changeBonusPPValue.Font = new System.Drawing.Font("メイリオ", 12F);
+            this.changeBonusPPValue.Location = new System.Drawing.Point(670, 87);
+            this.changeBonusPPValue.Name = "changeBonusPPValue";
+            this.changeBonusPPValue.Size = new System.Drawing.Size(0, 24);
+            this.changeBonusPPValue.TabIndex = 11;
+            // 
+            // mainForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 18F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(876, 694);
+            this.Controls.Add(this.changeBonusPPValue);
+            this.Controls.Add(this.changeACCValue);
+            this.Controls.Add(this.changePPValue);
+            this.Controls.Add(this.modeValue);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.BonusPPValue);
+            this.Controls.Add(this.globalPPValue);
+            this.Controls.Add(this.accValue);
+            this.Controls.Add(this.bonusPPText);
+            this.Controls.Add(this.ppText);
+            this.Controls.Add(this.accText);
+            this.Font = new System.Drawing.Font("メイリオ", 9F);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.MaximizeBox = false;
+            this.Name = "mainForm";
+            this.Text = "osu!private";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.mainForm_FormClosed);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        public System.Windows.Forms.Label accText;
+        public System.Windows.Forms.Label ppText;
+        public System.Windows.Forms.Label bonusPPText;
+        public System.Windows.Forms.Label accValue;
+        public System.Windows.Forms.Label globalPPValue;
+        public System.Windows.Forms.Label BonusPPValue;
+        public System.Windows.Forms.ListBox listBox1;
+        public System.Windows.Forms.Label label1;
+        public System.Windows.Forms.ComboBox modeValue;
+        private System.Windows.Forms.Label changePPValue;
+        private System.Windows.Forms.Label changeACCValue;
+        private System.Windows.Forms.Label changeBonusPPValue;
+    }
+}
+
