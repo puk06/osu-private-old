@@ -70,5 +70,3 @@ osu! PP calculator for offline users that works in an offline environment 🚀
   - User : [l3lackShark](https://github.com/l3lackShark)
   - Lisence : [GNU General Public License v3.0](https://github.com/l3lackShark/gosumemory/blob/master/LICENSE)
 
-- gosumemory
-
