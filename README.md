@@ -3,12 +3,14 @@
 
 osu! PP calculator for offline users that works in an offline environment 🚀
 
-# How to use?
+# How to use(JP)
 1. ユーザー名を入力する(詳しくは下の[ユーザー](https://github.com/puk06/osu-private/blob/main/README.md#About-this-software)をご覧ください。)
-3. Play osu!をクリック！
+2. Play osu!をクリック！
 
+# How to use(EN)
 1. Enter your username (see [User](https://github.com/puk06/osu-private/blob/main/README.md#About-this-software) below for more information).
 2. Click "Play osu!" !!
+
 # About this Software
 - このソフトについて
   - このソフトは、通常のプライベートサーバー、Banchoと同じようにGlobalPP、ACC、BonusPPを計算します。
