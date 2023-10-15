@@ -13,7 +13,7 @@ osu! PP calculator for offline users that works in an offline environment 🚀
 
 ### About this Software
 - このソフトについて
-  - このソフトは、通常のプライベートサーバー、Banchoと同じようにGlobalPP、ACC、BonusPPを計算します。
+  - このソフトは、オフライン環境で通常のプライベートサーバー、Banchoと同じようにGlobalPP、ACC、BonusPPを計算します。
   - osu!でのログインも必要ありません！
   - このソフトはこのような方におすすめです。
     - オフラインユーザーだけどPPが見たいという方
