@@ -1,4 +1,6 @@
-﻿namespace osu_private
+﻿using System.Windows.Forms;
+
+namespace osu_private
 {
     partial class mainForm
     {
@@ -41,6 +43,7 @@
             this.changePPValue = new System.Windows.Forms.Label();
             this.changeACCValue = new System.Windows.Forms.Label();
             this.changeBonusPPValue = new System.Windows.Forms.Label();
+            this.deleteScore = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // accText
@@ -112,6 +115,7 @@
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(848, 544);
             this.listBox1.TabIndex = 6;
+            this.listBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBox1_KeyDown);
             // 
             // label1
             // 
@@ -166,11 +170,22 @@
             this.changeBonusPPValue.Size = new System.Drawing.Size(0, 24);
             this.changeBonusPPValue.TabIndex = 11;
             // 
+            // deleteScore
+            // 
+            this.deleteScore.Location = new System.Drawing.Point(341, 10);
+            this.deleteScore.Name = "deleteScore";
+            this.deleteScore.Size = new System.Drawing.Size(112, 32);
+            this.deleteScore.TabIndex = 12;
+            this.deleteScore.Text = "Delete score";
+            this.deleteScore.UseVisualStyleBackColor = true;
+            this.deleteScore.Click += new System.EventHandler(this.deleteScore_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(876, 694);
+            this.Controls.Add(this.deleteScore);
             this.Controls.Add(this.changeBonusPPValue);
             this.Controls.Add(this.changeACCValue);
             this.Controls.Add(this.changePPValue);
@@ -210,6 +225,7 @@
         private System.Windows.Forms.Label changePPValue;
         private System.Windows.Forms.Label changeACCValue;
         private System.Windows.Forms.Label changeBonusPPValue;
+        private System.Windows.Forms.Button deleteScore;
     }
 }
 

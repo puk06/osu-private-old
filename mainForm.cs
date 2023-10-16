@@ -80,7 +80,7 @@ namespace osu_private
             {
                 try
                 {
-                    if (DateTime.Now - lastWriteTime < TimeSpan.FromSeconds(3) && !firstLaunch) return;
+                    if (DateTime.Now - lastWriteTime < TimeSpan.FromSeconds(2) && !firstLaunch) return;
                     if (firstLaunch)
                     {
                         firstLaunch = false;
@@ -104,10 +104,8 @@ namespace osu_private
                             listBox1.Items.Add("No plays.");
                             return;
                         }
-                        else
-                        {
-                            listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
-                        }
+
+                        listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                         // 以下、UIコントロールへのアクセスを修正
                         for (int i = 0; i < userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count(); i++)
                         {
@@ -232,11 +230,13 @@ namespace osu_private
                         return;
                     }
                 }
-                ProcessStartInfo startInfo = new ProcessStartInfo();
-                startInfo.FileName = "\"./src/nodejs/node.exe\"";
-                startInfo.Arguments = $"\"./src/osu!private.js\" \"{username}\"";
-                startInfo.CreateNoWindow = true;
-                startInfo.UseShellExecute = false;
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "\"./src/nodejs/node.exe\"",
+                    Arguments = $"\"./src/osu!private.js\" \"{username}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
                 osuPrivate = new Process();
                 osuPrivate.StartInfo = startInfo;
                 osuPrivate.Start();
@@ -267,22 +267,23 @@ namespace osu_private
             {
                 return "osu";
             }
-            else if (value == "osu!taiko")
+
+            if (value == "osu!taiko")
             {
                 return "taiko";
             }
-            else if (value == "osu!catch")
+
+            if (value == "osu!catch")
             {
                 return "catch";
             }
-            else if (value == "osu!mania")
+
+            if (value == "osu!mania")
             {
                 return "mania";
             }
-            else
-            {
-                return "osu";
-            }
+
+            return "osu";
         }
 
         private void modeValue_SelectedIndexChanged(object sender, EventArgs e)
@@ -307,7 +308,7 @@ namespace osu_private
                 }
 
                 listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
-                
+
                 for (int i = 0; i < userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count(); i++)
                 {
                     string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["title"]}";
@@ -356,6 +357,25 @@ namespace osu_private
                 globalPPValue.Text = "0pp";
                 accValue.Text = "0%";
                 BonusPPValue.Text = "0pp";
+            }
+        }
+
+        private void deleteScore_Click(object sender, EventArgs e)
+        {
+            if (!File.Exists($"./src/user/{username}.json"))
+            {
+                MessageBox.Show("No scores found! \n The delete function will not be enabled until you create a user and create at least one score!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            new deleteForm().ShowDialog();
+
+        }
+
+        private void listBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                listBox1.ClearSelected();
             }
         }
     }
