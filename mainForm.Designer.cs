@@ -44,6 +44,10 @@ namespace osu_private
             this.changeACCValue = new System.Windows.Forms.Label();
             this.changeBonusPPValue = new System.Windows.Forms.Label();
             this.deleteScore = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.playtimeValue = new System.Windows.Forms.Label();
+            this.playcountValue = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // accText
@@ -180,11 +184,55 @@ namespace osu_private
             this.deleteScore.UseVisualStyleBackColor = true;
             this.deleteScore.Click += new System.EventHandler(this.deleteScore_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("メイリオ", 10F);
+            this.label2.Location = new System.Drawing.Point(493, 9);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(84, 21);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "Playtime : ";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("メイリオ", 10F);
+            this.label3.Location = new System.Drawing.Point(485, 30);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(92, 21);
+            this.label3.TabIndex = 14;
+            this.label3.Text = "Playcount : ";
+            // 
+            // playtimeValue
+            // 
+            this.playtimeValue.AutoSize = true;
+            this.playtimeValue.Font = new System.Drawing.Font("メイリオ", 11F);
+            this.playtimeValue.Location = new System.Drawing.Point(572, 9);
+            this.playtimeValue.Name = "playtimeValue";
+            this.playtimeValue.Size = new System.Drawing.Size(56, 23);
+            this.playtimeValue.TabIndex = 15;
+            this.playtimeValue.Text = "0h 0m";
+            // 
+            // playcountValue
+            // 
+            this.playcountValue.AutoSize = true;
+            this.playcountValue.Font = new System.Drawing.Font("メイリオ", 11F);
+            this.playcountValue.Location = new System.Drawing.Point(572, 30);
+            this.playcountValue.Name = "playcountValue";
+            this.playcountValue.Size = new System.Drawing.Size(19, 23);
+            this.playcountValue.TabIndex = 16;
+            this.playcountValue.Text = "0";
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(876, 694);
+            this.Controls.Add(this.playcountValue);
+            this.Controls.Add(this.playtimeValue);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.deleteScore);
             this.Controls.Add(this.changeBonusPPValue);
             this.Controls.Add(this.changeACCValue);
@@ -226,6 +274,10 @@ namespace osu_private
         private System.Windows.Forms.Label changeACCValue;
         private System.Windows.Forms.Label changeBonusPPValue;
         private System.Windows.Forms.Button deleteScore;
+        private Label label2;
+        private Label label3;
+        private Label playtimeValue;
+        private Label playcountValue;
     }
 }
 

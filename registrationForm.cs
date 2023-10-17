@@ -1,6 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Diagnostics;
+using Octokit;
 
 namespace osu_private
 {
@@ -8,9 +11,10 @@ namespace osu_private
     {
         public registrationForm()
         {
+            githubUpdateChecker();
             InitializeComponent();
-            string[] userNames = System.IO.Directory.GetFileSystemEntries(@"./src/user")
-                .Select(x => System.IO.Path.GetFileNameWithoutExtension(x)).ToArray();
+            string[] userNames = Directory.GetFileSystemEntries(@"./src/user")
+                .Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
             foreach (var user in userNames)
             {
                 usernameForm.Items.Add(user);
@@ -37,6 +41,36 @@ namespace osu_private
                 mainForm mainForm = new mainForm(usernameForm.Text);
                 mainForm.Show();
                 Hide();
+            }
+        }
+
+        async void githubUpdateChecker()
+        {
+            string softwareReleasesLatest = "https://github.com/puk06/osu-private/releases/latest";
+            StreamReader currentVersion = new StreamReader("./version.txt");
+            string currentVersionString = currentVersion.ReadToEnd();
+            currentVersion.Close();
+            var owner = "puk06";
+            var repo = "osu-private";
+
+            var githubClient = new GitHubClient(new ProductHeaderValue("osu-private"));
+
+            try
+            {
+                var latestRelease = await githubClient.Repository.Release.GetLatest(owner, repo);
+
+                if (latestRelease.Name != currentVersionString)
+                {
+                    DialogResult result = MessageBox.Show($"最新バージョンがあります！\n\n現在: {currentVersionString} \n更新後: {latestRelease.TagName}\n\nダウンロードページを開きますか？", "アップデートのお知らせ", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    if (result == DialogResult.Yes)
+                    {
+                        Process.Start(softwareReleasesLatest);
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("アップデートチェック中にエラーが発生しました", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

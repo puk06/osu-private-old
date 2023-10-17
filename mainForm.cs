@@ -52,6 +52,8 @@ namespace osu_private
                 globalPPValue.Text = Math.Round((double)userdataJson["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
                 accValue.Text = Math.Round((double)userdataJson["globalACC"][convertMode(modeValue.Text)], 2) + "%";
                 BonusPPValue.Text = Math.Round((double)userdataJson["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
+                playtimeValue.Text = (string)userdataJson["playtime"][convertMode(modeValue.Text)];
+                playcountValue.Text = (string)userdataJson["playcount"][convertMode(modeValue.Text)];
                 globalPP["osu"] = (double)userdataJson["globalPP"]["osu"];
                 globalPP["taiko"] = (double)userdataJson["globalPP"]["taiko"];
                 globalPP["catch"] = (double)userdataJson["globalPP"]["catch"];
@@ -65,11 +67,13 @@ namespace osu_private
                 bonusPP["catch"] = (double)userdataJson["bonusPP"]["catch"];
                 bonusPP["mania"] = (double)userdataJson["bonusPP"]["mania"];
             }
-            catch (Exception)
+            catch
             {
                 globalPPValue.Text = "0pp";
                 accValue.Text = "0%";
                 BonusPPValue.Text = "0pp";
+                playtimeValue.Text = "0h 0m";
+                playcountValue.Text = "0";
             }
 
             string filePathToWatch = $"./src/user/{username}.json";
@@ -98,6 +102,8 @@ namespace osu_private
                         globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
                         accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)], 2) + "%";
                         BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
+                        playtimeValue.Text = (string)userdataJsonRecent["playtime"][convertMode(modeValue.Text)];
+                        playcountValue.Text = (string)userdataJsonRecent["playcount"][convertMode(modeValue.Text)];
                         listBox1.Items.Clear();
                         if (userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count() == 0)
                         {
@@ -106,7 +112,6 @@ namespace osu_private
                         }
 
                         listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
-                        // 以下、UIコントロールへのアクセスを修正
                         for (int i = 0; i < userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count(); i++)
                         {
                             string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["title"]}";
@@ -178,14 +183,16 @@ namespace osu_private
                         timer.Start();
                     });
                 }
-                catch (Exception)
+                catch
                 {
                     // エラーメッセージを表示する場合もInvokeを使用
-                    this.Invoke((MethodInvoker)delegate
+                    Invoke((MethodInvoker)delegate
                     {
                         globalPPValue.Text = "0pp";
                         accValue.Text = "0%";
                         BonusPPValue.Text = "0pp";
+                        playtimeValue.Text = "0h 0m";
+                        playcountValue.Text = "0";
                     });
                 }
             };
@@ -227,6 +234,16 @@ namespace osu_private
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Gosumemoryの起動に失敗しました。\nエラー内容:{ex}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        try
+                        {
+                            osuPrivate.Kill();
+                            if (gosumemoryLaunched) gosumemory.Kill();
+                            Application.Exit();
+                        }
+                        catch
+                        {
+                            Application.Exit();
+                        }
                         return;
                     }
                 }
@@ -244,6 +261,16 @@ namespace osu_private
             catch (Exception ex)
             {
                 MessageBox.Show($"osu!privateの起動に失敗しました。\nエラー内容:{ex}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                try
+                {
+                    osuPrivate.Kill();
+                    if (gosumemoryLaunched) gosumemory.Kill();
+                    Application.Exit();
+                }
+                catch
+                {
+                    Application.Exit();
+                }
             }
         }
 
@@ -255,7 +282,7 @@ namespace osu_private
                 if (gosumemoryLaunched) gosumemory.Kill();
                 Application.Exit();
             }
-            catch (Exception)
+            catch
             {
                 Application.Exit();
             }
@@ -300,6 +327,8 @@ namespace osu_private
                 globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
                 accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)], 2) + "%";
                 BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
+                playtimeValue.Text = (string)userdataJsonRecent["playtime"][convertMode(modeValue.Text)];
+                playcountValue.Text = (string)userdataJsonRecent["playcount"][convertMode(modeValue.Text)];
                 listBox1.Items.Clear();
                 if (userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count() == 0)
                 {
@@ -350,13 +379,15 @@ namespace osu_private
                     listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                 }
             }
-            catch (Exception)
+            catch
             {
                 listBox1.Items.Clear();
                 listBox1.Items.Add("No plays.");
                 globalPPValue.Text = "0pp";
                 accValue.Text = "0%";
                 BonusPPValue.Text = "0pp";
+                playtimeValue.Text = "0h 0m";
+                playcountValue.Text = "0";
             }
         }
 
@@ -368,7 +399,6 @@ namespace osu_private
                 return;
             }
             new deleteForm().ShowDialog();
-
         }
 
         private void listBox1_KeyDown(object sender, KeyEventArgs e)

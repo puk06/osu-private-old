@@ -29,7 +29,7 @@ namespace osu_private
                     if (mainForm.gosumemoryLaunched) mainForm.gosumemory.Kill();
                     Application.Exit();
                 }
-                catch (Exception)
+                catch
                 {
                     Application.Exit();
                 }
