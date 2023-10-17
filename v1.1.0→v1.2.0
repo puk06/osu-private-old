@@ -1,0 +1,19 @@
+,
+    "playtime": {
+        "osu": "0h 0m",
+        "taiko": "0h 8m",
+        "catch": "0h 0m",
+        "mania": "0h 0m"
+    },
+    "playtimeCalculate": {
+        "osu": 0,
+        "taiko": 511907,
+        "catch": 0,
+        "mania": 0
+    },
+    "playcount": {
+        "osu": 0,
+        "taiko": 7,
+        "catch": 0,
+        "mania": 0
+    }
