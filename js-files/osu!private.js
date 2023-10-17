@@ -5,6 +5,10 @@ const fs = require("fs");
 const crypto = require("crypto");
 let currentStatus = null;
 let currentMode = null;
+let nowPlaying = false;
+let hasEnded = false;
+let startTime = null;
+let endTime = null;
 
 async function main(username) {
     let res;
@@ -18,6 +22,8 @@ async function main(username) {
         try {
             let response = await axios.get("http://127.0.0.1:24050/json");
             if (currentStatus == 2 && response.data.menu.state == 7) {
+                hasEnded = false;
+                endTime = new Date().getTime();
                 currentStatus = response.data.menu.state;
                 const BannedModstext = fs.readFileSync("./BannedMods.txt", "utf-8")
                 const BannedMods = BannedModstext.split(",").filter((mod) => {
@@ -88,6 +94,24 @@ async function main(username) {
                             "catch": 0,
                             "mania": 0
                         },
+                        "playtime" : {
+                            "osu": "0h 0m",
+                            "taiko": "0h 0m",
+                            "catch": "0h 0m",
+                            "mania": "0h 0m"
+                        },
+                        "playtimeCalculate" : {
+                            "osu": 0,
+                            "taiko": 0,
+                            "catch": 0,
+                            "mania": 0
+                        },
+                        "playcount" : {
+                            "osu": 0,
+                            "taiko": 0,
+                            "catch": 0,
+                            "mania": 0
+                        },
                         "pp": {
                             "osu": [],
                             "taiko": [],
@@ -108,7 +132,16 @@ async function main(username) {
                                 json.pp[mode][i] = data;
                                 flag = true;
                             } else {
+                                const time = endTime - startTime;
+                                const playtime = formatTime(json.playtimeCalculate[mode] + time);
+                                json.playtime[mode] = playtime;
+                                json.playtimeCalculate[mode] += time;
+                                json.playcount[mode] += 1;
+                                json.lastGamemode = currentMode;
+                                fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
                                 response = null;
+                                startTime = null;
+                                endTime = null;
                                 return;
                             }
                         }
@@ -124,12 +157,50 @@ async function main(username) {
                 const bonusPP = calculateBonusPP(json, mode);
                 const globalPP = calculateGlobalPP(json, mode) + bonusPP;
                 const globalACC = calculateGlobalACC(json, mode);
+                if (startTime != null) {
+                    const time = endTime - startTime;
+                    const playtime = formatTime(json.playtimeCalculate[mode] + time);
+                    json.playtime[mode] = playtime;
+                    json.playtimeCalculate[mode] += time;
+                }
+                json.playcount[mode] += 1;
                 json.bonusPP[mode] = bonusPP;
                 json.globalPP[mode] = globalPP;
                 json.globalACC[mode] = globalACC;
                 json.lastGamemode = currentMode;
                 fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
+                startTime = null;
+                endTime = null;
             }
+
+            if (currentStatus == 5 && response.data.menu.state == 2) {
+                nowPlaying = true;
+            } else if (currentStatus == 2 && response.data.menu.state == 5) {
+                hasEnded = true
+            }
+
+            if (nowPlaying) {
+                nowPlaying = false;
+                startTime = new Date().getTime()
+            }
+            
+            if (hasEnded) {
+                hasEnded = false;
+                endTime = new Date().getTime()
+                const json = JSON.parse(fs.readFileSync("./src/user/" + username + ".json", "utf-8"));
+                const mode = modeConverter(currentMode);
+                if (startTime != null) {
+                    const time = endTime - startTime;
+                    const playtime = formatTime(json.playtimeCalculate[mode] + time);
+                    json.playtime[mode] = playtime;
+                    json.playtimeCalculate[mode] += time;
+                }
+                json.playcount[mode] += 1;
+                fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
+                startTime = null;
+                endTime = null;
+            }
+
             currentStatus = response.data.menu.state;
             currentMode = response.data.menu.gameMode;
             response = null;
@@ -166,6 +237,12 @@ function calculateGlobalACC (json, mode) {
 function calculateBonusPP (json, mode) {
     const bonusPP = 416.6667 * (1 - Math.pow(0.9994, json.pp[mode].length));
     return bonusPP;
+}
+
+function formatTime (time) {
+    const hours = Math.floor(time / 3600000);
+    const minutes = Math.floor((time - (hours * 3600000)) / 60000);
+    return hours + "h " + minutes + "m";
 }
 
 function modeConverter (mode) {
