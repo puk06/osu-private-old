@@ -18,7 +18,8 @@ async function main(username) {
     } catch (e) {
         console.log(e)
     }
-    setInterval(async () => {
+    
+    while (true) {
         try {
             let response = await axios.get("http://127.0.0.1:24050/json");
             if (currentStatus == 2 && response.data.menu.state == 7) {
@@ -33,6 +34,8 @@ async function main(username) {
                 for (const resultMod of mod) {
                     if (BannedMods.includes(resultMod)) {
                         response = null;
+                        startTime = null;
+                        endTime = null;
                         return;
                     }
                 }
@@ -121,7 +124,7 @@ async function main(username) {
                     }, null, 4));
                 }
 
-                const json = JSON.parse(fs.readFileSync("./src/user/" + username + ".json", "utf-8"));
+                let json = JSON.parse(fs.readFileSync("./src/user/" + username + ".json", "utf-8"));
                 const mode = modeConverter(currentMode);
 
                 if (json.pp[mode].length > 0) {
@@ -169,6 +172,7 @@ async function main(username) {
                 json.globalACC[mode] = globalACC;
                 json.lastGamemode = currentMode;
                 fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
+                json = null;
                 startTime = null;
                 endTime = null;
             }
@@ -186,19 +190,32 @@ async function main(username) {
             
             if (hasEnded) {
                 hasEnded = false;
-                endTime = new Date().getTime()
-                const json = JSON.parse(fs.readFileSync("./src/user/" + username + ".json", "utf-8"));
-                const mode = modeConverter(currentMode);
-                if (startTime != null) {
-                    const time = endTime - startTime;
-                    const playtime = formatTime(json.playtimeCalculate[mode] + time);
-                    json.playtime[mode] = playtime;
-                    json.playtimeCalculate[mode] += time;
+                if (!fs.existsSync("./src/user/" + username + ".json") || startTime == null) {
+                    startTime = null;
+                    endTime = null;
+                } else {
+                    endTime = new Date().getTime()
+                    if (endTime - startTime < 10000) {
+                        startTime = null;
+                        endTime = null;
+                        response = null;
+                        return;
+                    }
+                    let json = JSON.parse(fs.readFileSync("./src/user/" + username + ".json", "utf-8"));
+                    const mode = modeConverter(currentMode);
+                    if (startTime != null) {
+                        const time = endTime - startTime;
+                        const playtime = formatTime(json.playtimeCalculate[mode] + time);
+                        json.playtime[mode] = playtime;
+                        json.playtimeCalculate[mode] += time;
+                    }
+                    json.playcount[mode] += 1;
+                    json.lastGamemode = currentMode;
+                    fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
+                    startTime = null;
+                    endTime = null;
+                    json = null;
                 }
-                json.playcount[mode] += 1;
-                fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
-                startTime = null;
-                endTime = null;
             }
 
             currentStatus = response.data.menu.state;
@@ -207,7 +224,7 @@ async function main(username) {
         } catch (e) {
             console.log(e)
         }
-    }, 100);
+    }
 }
 
 main(process.argv[2]);
