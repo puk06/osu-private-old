@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 
@@ -80,8 +81,9 @@ namespace osu_private
             FileSystemWatcher watcher = new FileSystemWatcher();
             watcher.Path = Path.GetDirectoryName(filePathToWatch);
             watcher.Filter = Path.GetFileName(filePathToWatch);
-            watcher.Changed += (sender, e) =>
+            watcher.Changed += async (sender, e) =>
             {
+                await Task.Delay(500);
                 try
                 {
                     if (DateTime.Now - lastWriteTime < TimeSpan.FromSeconds(2) && !firstLaunch) return;
