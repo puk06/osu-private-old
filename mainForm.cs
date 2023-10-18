@@ -97,6 +97,7 @@ namespace osu_private
                         StreamReader userdataRecent = new StreamReader($"./src/user/{username}.json");
                         string userdataStringRecent = userdataRecent.ReadToEnd();
                         userdataRecent.Close();
+                        errorText.Text = "";
                         JObject userdataJsonRecent = JObject.Parse(userdataStringRecent);
                         modeValue.SelectedIndex = (int)userdataJsonRecent["lastGamemode"];
                         globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
@@ -152,12 +153,25 @@ namespace osu_private
                             listBox1.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["pp"]}pp");
                             listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                         }
-                        changePPValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2))}pp";
-                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        changeACCValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2))}%";
-                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        changeBonusPPValue.Text = $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2))}pp";
-                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+
+                        if (!(Math.Abs(Math.Round(
+                                (double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] -
+                                globalPP[convertMode(modeValue.Text)], 2)) == 0
+                            && Math.Abs(Math.Round(
+                                (double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] -
+                                globalACC[convertMode(modeValue.Text)], 2)) == 0
+                            && Math.Abs(Math.Round(
+                                (double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] -
+                                bonusPP[convertMode(modeValue.Text)], 2)) == 0))
+                        {
+                            changePPValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2))}pp";
+                            changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                            changeACCValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2))}%";
+                            changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                            changeBonusPPValue.Text = $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2))}pp";
+                            changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+
+                        }
                         globalPP["osu"] = (double)userdataJsonRecent["globalPP"]["osu"];
                         globalPP["taiko"] = (double)userdataJsonRecent["globalPP"]["taiko"];
                         globalPP["catch"] = (double)userdataJsonRecent["globalPP"]["catch"];
@@ -185,15 +199,7 @@ namespace osu_private
                 }
                 catch
                 {
-                    // エラーメッセージを表示する場合もInvokeを使用
-                    Invoke((MethodInvoker)delegate
-                    {
-                        globalPPValue.Text = "0pp";
-                        accValue.Text = "0%";
-                        BonusPPValue.Text = "0pp";
-                        playtimeValue.Text = "0h 0m";
-                        playcountValue.Text = "0";
-                    });
+                    errorText.Text = "※ファイルの読み込み中にエラーが発生しました。次回記録を付けた際に反映されなかった記録なども表示されます。";
                 }
             };
             watcher.EnableRaisingEvents = true;

@@ -48,6 +48,7 @@ namespace osu_private
             this.label3 = new System.Windows.Forms.Label();
             this.playtimeValue = new System.Windows.Forms.Label();
             this.playcountValue = new System.Windows.Forms.Label();
+            this.errorText = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // accText
@@ -117,7 +118,7 @@ namespace osu_private
             this.listBox1.ItemHeight = 20;
             this.listBox1.Location = new System.Drawing.Point(16, 121);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(848, 544);
+            this.listBox1.Size = new System.Drawing.Size(848, 524);
             this.listBox1.TabIndex = 6;
             this.listBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBox1_KeyDown);
             // 
@@ -224,11 +225,22 @@ namespace osu_private
             this.playcountValue.TabIndex = 16;
             this.playcountValue.Text = "0";
             // 
+            // errorText
+            // 
+            this.errorText.AutoSize = true;
+            this.errorText.Font = new System.Drawing.Font("メイリオ", 12F);
+            this.errorText.ForeColor = System.Drawing.Color.Red;
+            this.errorText.Location = new System.Drawing.Point(12, 656);
+            this.errorText.Name = "errorText";
+            this.errorText.Size = new System.Drawing.Size(68, 24);
+            this.errorText.TabIndex = 17;
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(876, 694);
+            this.Controls.Add(this.errorText);
             this.Controls.Add(this.playcountValue);
             this.Controls.Add(this.playtimeValue);
             this.Controls.Add(this.label3);
@@ -278,6 +290,7 @@ namespace osu_private
         private Label label3;
         private Label playtimeValue;
         private Label playcountValue;
+        private Label errorText;
     }
 }
 
