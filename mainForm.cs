@@ -83,7 +83,7 @@ namespace osu_private
             watcher.Filter = Path.GetFileName(filePathToWatch);
             watcher.Changed += async (sender, e) =>
             {
-                await Task.Delay(500);
+                await Task.Delay(100);
                 try
                 {
                     if (DateTime.Now - lastWriteTime < TimeSpan.FromSeconds(2) && !firstLaunch) return;
