@@ -18,7 +18,6 @@ async function main(username) {
     } catch (e) {
         console.log(e)
     }
-    
     while (true) {
         try {
             let response = await axios.get("http://127.0.0.1:24050/json");
@@ -31,14 +30,17 @@ async function main(username) {
                     return mod != "" && mod.length == 2;
                 });
                 const mod = response.data.menu.mods.str.match(/.{2}/g);
+                let bannedmodflag = false;
                 for (const resultMod of mod) {
                     if (BannedMods.includes(resultMod)) {
                         response = null;
                         startTime = null;
                         endTime = null;
-                        return;
+                        bannedmodflag = true;
+                        break;
                     }
                 }
+                if (bannedmodflag) continue;
 
                 const mappath = path.join(response.data.settings.folders.songs, response.data.menu.bm.path.folder, response.data.menu.bm.path.file)
                 const params = {
@@ -129,11 +131,13 @@ async function main(username) {
 
                 if (json.pp[mode].length > 0) {
                     let flag = false;
+                    let continueflag = false;
                     for (let i = 0; i < json.pp[mode].length; i++) {
                         if (json.pp[mode][i].hash == confirmHash) {
                             if ((json.pp[mode][i].score < response.data.gameplay.score && json.pp[mode][i].mods == response.data.menu.mods.str) || (pp > json.pp[mode][i].pp)) {
                                 json.pp[mode][i] = data;
                                 flag = true;
+                                break;
                             } else {
                                 const time = endTime - startTime;
                                 const playtime = formatTime(json.playtimeCalculate[mode] + time);
@@ -145,10 +149,12 @@ async function main(username) {
                                 response = null;
                                 startTime = null;
                                 endTime = null;
-                                return;
+                                continueflag = true;
+                                break;
                             }
                         }
                     }
+                    if (continueflag) continue;
                     if (!flag) json.pp[mode].push(data);
                 } else {
                     json.pp[mode].push(data);
@@ -199,7 +205,7 @@ async function main(username) {
                         startTime = null;
                         endTime = null;
                         response = null;
-                        return;
+                        continue;
                     }
                     let json = JSON.parse(fs.readFileSync("./src/user/" + username + ".json", "utf-8"));
                     const mode = modeConverter(currentMode);
