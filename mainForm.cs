@@ -155,25 +155,13 @@ namespace osu_private
                             listBox1.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["pp"]}pp");
                             listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                         }
+                        changePPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2))}pp";
+                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                        changeACCValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2))}%";
+                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                        changeBonusPPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2))}pp";
+                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
 
-                        if (!(Math.Abs(Math.Round(
-                                (double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] -
-                                globalPP[convertMode(modeValue.Text)], 2)) == 0
-                            && Math.Abs(Math.Round(
-                                (double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] -
-                                globalACC[convertMode(modeValue.Text)], 2)) == 0
-                            && Math.Abs(Math.Round(
-                                (double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] -
-                                bonusPP[convertMode(modeValue.Text)], 2)) == 0))
-                        {
-                            changePPValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2))}pp";
-                            changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                            changeACCValue.Text = $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2))}%";
-                            changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                            changeBonusPPValue.Text = $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2))}pp";
-                            changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-
-                        }
                         globalPP["osu"] = (double)userdataJsonRecent["globalPP"]["osu"];
                         globalPP["taiko"] = (double)userdataJsonRecent["globalPP"]["taiko"];
                         globalPP["catch"] = (double)userdataJsonRecent["globalPP"]["catch"];
