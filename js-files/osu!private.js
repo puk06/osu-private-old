@@ -139,10 +139,12 @@ async function main(username) {
                                 flag = true;
                                 break;
                             } else {
-                                const time = endTime - startTime;
-                                const playtime = formatTime(json.playtimeCalculate[mode] + time);
-                                json.playtime[mode] = playtime;
-                                json.playtimeCalculate[mode] += time;
+                                if (startTime != null) {
+                                    const time = endTime - startTime;
+                                    const playtime = formatTime(json.playtimeCalculate[mode] + time);
+                                    json.playtime[mode] = playtime;
+                                    json.playtimeCalculate[mode] += time;
+                                }
                                 json.playcount[mode] += 1;
                                 json.lastGamemode = currentMode;
                                 fs.writeFileSync("./src/user/" + username + ".json", JSON.stringify(json, null, 4));
