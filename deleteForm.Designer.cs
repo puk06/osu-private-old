@@ -1,11 +1,14 @@
-﻿namespace osu_private
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace osu_private
 {
-    partial class deleteForm
+    partial class DeleteForm
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -28,7 +31,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(deleteForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DeleteForm));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.modeValue = new System.Windows.Forms.ComboBox();
@@ -107,7 +110,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "deleteForm";
+            this.Name = "DeleteForm";
             this.Text = "Select a score";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -116,10 +119,10 @@
 
         #endregion
 
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox modeValue;
-        private System.Windows.Forms.ComboBox scoreList;
-        private System.Windows.Forms.Button deleteButton;
+        private Label label1;
+        private Label label2;
+        private ComboBox modeValue;
+        private ComboBox scoreList;
+        private Button deleteButton;
     }
 }

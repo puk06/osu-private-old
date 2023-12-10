@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,39 +10,43 @@ using Newtonsoft.Json.Linq;
 
 namespace osu_private
 {
-    public partial class mainForm : Form
+    public partial class MainForm : Form
     {
-        public static Process osuPrivate;
-        public static Process gosumemory;
-        public static bool gosumemoryLaunched;
-        public static string username;
-        public static Dictionary<string, double> globalPP = new Dictionary<string, double>()
+        public static Process OsuPrivate;
+        public static Process Gosumemory;
+        public static string Username;
+
+        private static readonly Dictionary<string, double> GlobalPp = new Dictionary<string, double>
         {
             {"osu", 0},
             {"taiko", 0},
             {"catch", 0},
             {"mania", 0}
         };
-        public static Dictionary<string, double> globalACC = new Dictionary<string, double>()
+
+        private static readonly Dictionary<string, double> GlobalAcc = new Dictionary<string, double>
         {
             {"osu", 0},
             {"taiko", 0},
             {"catch", 0},
             {"mania", 0}
         };
-        public static Dictionary<string, double> bonusPP = new Dictionary<string, double>()
+
+        private static readonly Dictionary<string, double> BonusPp = new Dictionary<string, double>
         {
             {"osu", 0},
             {"taiko", 0},
             {"catch", 0},
             {"mania", 0}
         };
-        private DateTime lastWriteTime;
-        private static bool firstLaunch = true;
-        public mainForm(string username)
+
+        private long _lastTick;
+        private bool _firstTime = true;
+        
+        public MainForm(string username)
         {
-            mainForm.username = username;
-            launchSoftware(username);
+            Username = username;
+            LaunchSoftware(username);
             InitializeComponent();
             modeValue.SelectedIndex = 0;
             try
@@ -50,23 +55,23 @@ namespace osu_private
                 string userdataString = userdata.ReadToEnd();
                 userdata.Close();
                 JObject userdataJson = JObject.Parse(userdataString);
-                globalPPValue.Text = Math.Round((double)userdataJson["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
-                accValue.Text = Math.Round((double)userdataJson["globalACC"][convertMode(modeValue.Text)], 2) + "%";
-                BonusPPValue.Text = Math.Round((double)userdataJson["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
-                playtimeValue.Text = (string)userdataJson["playtime"][convertMode(modeValue.Text)];
-                playcountValue.Text = (string)userdataJson["playcount"][convertMode(modeValue.Text)];
-                globalPP["osu"] = (double)userdataJson["globalPP"]["osu"];
-                globalPP["taiko"] = (double)userdataJson["globalPP"]["taiko"];
-                globalPP["catch"] = (double)userdataJson["globalPP"]["catch"];
-                globalPP["mania"] = (double)userdataJson["globalPP"]["mania"];
-                globalACC["osu"] = (double)userdataJson["globalACC"]["osu"];
-                globalACC["taiko"] = (double)userdataJson["globalACC"]["taiko"];
-                globalACC["catch"] = (double)userdataJson["globalACC"]["catch"];
-                globalACC["mania"] = (double)userdataJson["globalACC"]["mania"];
-                bonusPP["osu"] = (double)userdataJson["bonusPP"]["osu"];
-                bonusPP["taiko"] = (double)userdataJson["bonusPP"]["taiko"];
-                bonusPP["catch"] = (double)userdataJson["bonusPP"]["catch"];
-                bonusPP["mania"] = (double)userdataJson["bonusPP"]["mania"];
+                globalPPValue.Text = Math.Round((double)userdataJson["globalPP"][ConvertMode(modeValue.Text)], 2) + "pp";
+                accValue.Text = Math.Round((double)userdataJson["globalACC"][ConvertMode(modeValue.Text)], 2) + "%";
+                BonusPPValue.Text = Math.Round((double)userdataJson["bonusPP"][ConvertMode(modeValue.Text)], 2) + "pp";
+                playtimeValue.Text = (string)userdataJson["playtime"][ConvertMode(modeValue.Text)];
+                playcountValue.Text = (string)userdataJson["playcount"][ConvertMode(modeValue.Text)];
+                GlobalPp["osu"] = (double)userdataJson["globalPP"]["osu"];
+                GlobalPp["taiko"] = (double)userdataJson["globalPP"]["taiko"];
+                GlobalPp["catch"] = (double)userdataJson["globalPP"]["catch"];
+                GlobalPp["mania"] = (double)userdataJson["globalPP"]["mania"];
+                GlobalAcc["osu"] = (double)userdataJson["globalACC"]["osu"];
+                GlobalAcc["taiko"] = (double)userdataJson["globalACC"]["taiko"];
+                GlobalAcc["catch"] = (double)userdataJson["globalACC"]["catch"];
+                GlobalAcc["mania"] = (double)userdataJson["globalACC"]["mania"];
+                BonusPp["osu"] = (double)userdataJson["bonusPP"]["osu"];
+                BonusPp["taiko"] = (double)userdataJson["bonusPP"]["taiko"];
+                BonusPp["catch"] = (double)userdataJson["bonusPP"]["catch"];
+                BonusPp["mania"] = (double)userdataJson["bonusPP"]["mania"];
             }
             catch
             {
@@ -76,6 +81,16 @@ namespace osu_private
                 playtimeValue.Text = "0h 0m";
                 playcountValue.Text = "0";
             }
+            
+            Timer timer = new Timer();
+            timer.Interval = 5000;
+            timer.Tick += (sendertick, etick) =>
+            {
+                changePPValue.Text = "";
+                changeACCValue.Text = "";
+                changeBonusPPValue.Text = "";
+                timer.Stop();
+            };
 
             string filePathToWatch = $"./src/user/{username}.json";
             FileSystemWatcher watcher = new FileSystemWatcher();
@@ -83,17 +98,13 @@ namespace osu_private
             watcher.Filter = Path.GetFileName(filePathToWatch);
             watcher.Changed += async (sender, e) =>
             {
-                await Task.Delay(100);
                 try
                 {
-                    if (DateTime.Now - lastWriteTime < TimeSpan.FromSeconds(2) && !firstLaunch) return;
-                    if (firstLaunch)
-                    {
-                        firstLaunch = false;
-                        return;
-                    }
-
-                    lastWriteTime = DateTime.Now;
+                    await Task.Delay(100);
+                    if (DateTime.Now.Ticks - _lastTick < 10000000 && !_firstTime) return;
+                    if (_firstTime) _firstTime = false;
+                    _lastTick = DateTime.Now.Ticks;
+                    
                     Invoke((MethodInvoker)delegate
                     {
                         StreamReader userdataRecent = new StreamReader($"./src/user/{username}.json");
@@ -102,88 +113,73 @@ namespace osu_private
                         errorText.Text = "";
                         JObject userdataJsonRecent = JObject.Parse(userdataStringRecent);
                         modeValue.SelectedIndex = (int)userdataJsonRecent["lastGamemode"];
-                        globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
-                        accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)], 2) + "%";
-                        BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
-                        playtimeValue.Text = (string)userdataJsonRecent["playtime"][convertMode(modeValue.Text)];
-                        playcountValue.Text = (string)userdataJsonRecent["playcount"][convertMode(modeValue.Text)];
-                        listBox1.Items.Clear();
-                        if (userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count() == 0)
+                        globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)], 2) + "pp";
+                        accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)], 2) + "%";
+                        BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)], 2) + "pp";
+                        playtimeValue.Text = (string)userdataJsonRecent["playtime"][ConvertMode(modeValue.Text)];
+                        playcountValue.Text = (string)userdataJsonRecent["playcount"][ConvertMode(modeValue.Text)];
+                        BestPerformance.Items.Clear();
+                        if (!(userdataJsonRecent["pp"][ConvertMode(modeValue.Text)] ?? throw new InvalidOperationException()).Any())
                         {
-                            listBox1.Items.Add("No plays.");
+                            BestPerformance.Items.Add("No plays.");
                             return;
                         }
 
-                        listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
-                        for (int i = 0; i < userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count(); i++)
+                        BestPerformance.Items.Add("-----------------------------------------------------------------------------------------------------------------");
+                        for (int i = 0; i < (userdataJsonRecent["pp"][ConvertMode(modeValue.Text)] ?? throw new InvalidOperationException()).Count(); i++)
                         {
-                            string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["title"]}";
-                            string versionName = $"Mapper: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mapper"]}   Difficulty: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["version"]}";
+                            string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["title"]}";
+                            string versionName = $"Mapper: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["mapper"]}   Difficulty: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["version"]}";
                             string hitsInfo = "";
-                            if (convertMode(modeValue.Text) == "osu" || convertMode(modeValue.Text) == "catch")
+                            switch (ConvertMode(modeValue.Text))
                             {
-                                hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                            }
-                            else if (convertMode(modeValue.Text) == "taiko")
-                            {
-                                hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                            }
-                            else if (convertMode(modeValue.Text) == "mania")
-                            {
-                                hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["geki"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["katu"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                            }
-                            else
-                            {
-                                hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                            }
-
-                            if (itemTitle.Length > 110)
-                            {
-                                itemTitle = itemTitle.Substring(0, 110) + "...";
+                                case "osu":
+                                    hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                                    break;
+                                
+                                case "taiko":
+                                    hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                                    break;
+                                
+                                case "catch":
+                                    hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                                    break;
+                                
+                                case "mania":
+                                    hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["geki"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["katu"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                                    break;
                             }
 
-                            if (versionName.Length > 110)
-                            {
-                                versionName = versionName.Substring(0, 110) + "...";
-                            }
-
-                            string resultInfo = $"Score: {string.Format("{0:#,0}", (int)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["score"])} / {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["combo"]}x   {hitsInfo}";
-                            listBox1.Items.Add($"#{i + 1}");
-                            listBox1.Items.Add(itemTitle);
-                            listBox1.Items.Add(versionName);
-                            listBox1.Items.Add(resultInfo);
-                            listBox1.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["pp"]}pp");
-                            listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
+                            if (itemTitle.Length > 110) itemTitle = itemTitle.Substring(0, 110) + "...";
+                            if (versionName.Length > 110) versionName = versionName.Substring(0, 110) + "...";
+                            
+                            string resultInfo = $"Score: {(int)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["score"]:#,0} / {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["combo"]}x   {hitsInfo}";
+                            BestPerformance.Items.Add($"#{i + 1}");
+                            BestPerformance.Items.Add(itemTitle);
+                            BestPerformance.Items.Add(versionName);
+                            BestPerformance.Items.Add(resultInfo);
+                            BestPerformance.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["pp"]}pp");
+                            BestPerformance.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                         }
-                        changePPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2))}pp";
-                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)] - globalPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        changeACCValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2))}%";
-                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)] - globalACC[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
-                        changeBonusPPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2))}pp";
-                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)] - bonusPP[convertMode(modeValue.Text)], 2) >= 0 ? System.Drawing.Color.ForestGreen : System.Drawing.Color.Red;
+                        changePPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2))}pp";
+                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2) >= 0 ? Color.ForestGreen : Color.Red;
+                        changeACCValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2))}%";
+                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2) >= 0 ? Color.ForestGreen : Color.Red;
+                        changeBonusPPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2))}pp";
+                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2) >= 0 ? Color.ForestGreen : Color.Red;
 
-                        globalPP["osu"] = (double)userdataJsonRecent["globalPP"]["osu"];
-                        globalPP["taiko"] = (double)userdataJsonRecent["globalPP"]["taiko"];
-                        globalPP["catch"] = (double)userdataJsonRecent["globalPP"]["catch"];
-                        globalPP["mania"] = (double)userdataJsonRecent["globalPP"]["mania"];
-                        globalACC["osu"] = (double)userdataJsonRecent["globalACC"]["osu"];
-                        globalACC["taiko"] = (double)userdataJsonRecent["globalACC"]["taiko"];
-                        globalACC["catch"] = (double)userdataJsonRecent["globalACC"]["catch"];
-                        globalACC["mania"] = (double)userdataJsonRecent["globalACC"]["mania"];
-                        bonusPP["osu"] = (double)userdataJsonRecent["bonusPP"]["osu"];
-                        bonusPP["taiko"] = (double)userdataJsonRecent["bonusPP"]["taiko"];
-                        bonusPP["catch"] = (double)userdataJsonRecent["bonusPP"]["catch"];
-                        bonusPP["mania"] = (double)userdataJsonRecent["bonusPP"]["mania"];
-
-                        Timer timer = new Timer();
-                        timer.Interval = 5000;
-                        timer.Tick += (sendertick, etick) =>
-                        {
-                            changePPValue.Text = "";
-                            changeACCValue.Text = "";
-                            changeBonusPPValue.Text = "";
-                            timer.Stop();
-                        };
+                        GlobalPp["osu"] = (double)userdataJsonRecent["globalPP"]["osu"];
+                        GlobalPp["taiko"] = (double)userdataJsonRecent["globalPP"]["taiko"];
+                        GlobalPp["catch"] = (double)userdataJsonRecent["globalPP"]["catch"];
+                        GlobalPp["mania"] = (double)userdataJsonRecent["globalPP"]["mania"];
+                        GlobalAcc["osu"] = (double)userdataJsonRecent["globalACC"]["osu"];
+                        GlobalAcc["taiko"] = (double)userdataJsonRecent["globalACC"]["taiko"];
+                        GlobalAcc["catch"] = (double)userdataJsonRecent["globalACC"]["catch"];
+                        GlobalAcc["mania"] = (double)userdataJsonRecent["globalACC"]["mania"];
+                        BonusPp["osu"] = (double)userdataJsonRecent["bonusPP"]["osu"];
+                        BonusPp["taiko"] = (double)userdataJsonRecent["bonusPP"]["taiko"];
+                        BonusPp["catch"] = (double)userdataJsonRecent["bonusPP"]["catch"];
+                        BonusPp["mania"] = (double)userdataJsonRecent["bonusPP"]["mania"];
                         timer.Start();
                     });
                 }
@@ -195,54 +191,47 @@ namespace osu_private
             watcher.EnableRaisingEvents = true;
         }
 
-        public static void launchSoftware(string username)
+        private static void LaunchSoftware(string username)
         {
+            if (Process.GetProcessesByName("gosumemory").Length == 0)
+            {
+                try
+                {
+                    if (!File.Exists("./src/gosumemory/gosumemory.exe"))
+                    {
+                        DialogResult result = MessageBox.Show("Gosumemoryがフォルダ内から見つかりませんでした。\nGithubからダウンロードしますか？",
+                            "エラー", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                        if (result == DialogResult.Yes)
+                        {
+                            MessageBox.Show(
+                                "ダウンロードページをwebブラウザで開きます。\nインストール方法: ダウンロードしたフォルダを開き、osu!trainer/src/gosumemory/gosumemory.exeとなるように配置する。",
+                                "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            Process.Start("https://github.com/l3lackShark/gosumemory/releases/");
+                            return;
+                        }
+                        Application.Exit();
+                    }
+                    
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = "./src/gosumemory/gosumemory.exe",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    Gosumemory = new Process();
+                    Gosumemory.StartInfo = startInfo;
+                    Gosumemory.Start();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Gosumemoryの起動に失敗しました。\nエラー内容:{ex}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
+                }
+            }
+
             try
             {
-                if (Process.GetProcessesByName("gosumemory").Length == 0)
-                {
-                    try
-                    {
-                        if (!File.Exists("./src/gosumemory/gosumemory.exe"))
-                        {
-                            DialogResult result = MessageBox.Show("Gosumemoryがフォルダ内から見つかりませんでした。\nGithubからダウンロードしますか？",
-                                "エラー", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                            if (result == DialogResult.Yes)
-                            {
-                                //webブラウザでダウンロードページを開く
-                                MessageBox.Show(
-                                    "ダウンロードページをwebブラウザで開きます。\nインストール方法: ダウンロードしたフォルダを開き、osu!trainer/src/gosumemory/gosumemory.exeとなるように配置する。",
-                                    "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                Process.Start("https://github.com/l3lackShark/gosumemory/releases/");
-                                return;
-                            }
-                            Application.Exit();
-                        }
-
-                        //launch gosumemory
-                        gosumemoryLaunched = true;
-                        gosumemory = new Process();
-                        gosumemory.StartInfo.FileName = "./src/gosumemory/gosumemory.exe";
-                        gosumemory.StartInfo.CreateNoWindow = true;
-                        gosumemory.StartInfo.UseShellExecute = false;
-                        gosumemory.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Gosumemoryの起動に失敗しました。\nエラー内容:{ex}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        try
-                        {
-                            osuPrivate.Kill();
-                            if (gosumemoryLaunched) gosumemory.Kill();
-                            Application.Exit();
-                        }
-                        catch
-                        {
-                            Application.Exit();
-                        }
-                        return;
-                    }
-                }
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = "\"./src/nodejs/node.exe\"",
@@ -250,63 +239,34 @@ namespace osu_private
                     CreateNoWindow = true,
                     UseShellExecute = false
                 };
-                osuPrivate = new Process();
-                osuPrivate.StartInfo = startInfo;
-                osuPrivate.Start();
+                OsuPrivate = new Process();
+                OsuPrivate.StartInfo = startInfo;
+                OsuPrivate.Start();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"osu!privateの起動に失敗しました。\nエラー内容:{ex}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                try
-                {
-                    osuPrivate.Kill();
-                    if (gosumemoryLaunched) gosumemory.Kill();
-                    Application.Exit();
-                }
-                catch
-                {
-                    Application.Exit();
-                }
-            }
-        }
-
-        public void mainForm_FormClosed(object sender, EventArgs e)
-        {
-            try
-            {
-                osuPrivate.Kill();
-                if (gosumemoryLaunched) gosumemory.Kill();
-                Application.Exit();
-            }
-            catch
-            {
                 Application.Exit();
             }
         }
 
-        public static string convertMode(string value)
+        private void mainForm_FormClosed(object sender, EventArgs e) => Application.Exit();
+
+        public static string ConvertMode(string value)
         {
-            if (value == "osu!standard")
+            switch (value)
             {
-                return "osu";
+                case "osu!standard":
+                    return "osu";
+                case "osu!taiko":
+                    return "taiko";
+                case "osu!catch":
+                    return "catch";
+                case "osu!mania":
+                    return "mania";
+                default:
+                    return "osu";
             }
-
-            if (value == "osu!taiko")
-            {
-                return "taiko";
-            }
-
-            if (value == "osu!catch")
-            {
-                return "catch";
-            }
-
-            if (value == "osu!mania")
-            {
-                return "mania";
-            }
-
-            return "osu";
         }
 
         private void modeValue_SelectedIndexChanged(object sender, EventArgs e)
@@ -316,69 +276,64 @@ namespace osu_private
                 changePPValue.Text = "";
                 changeACCValue.Text = "";
                 changeBonusPPValue.Text = "";
-                StreamReader userdataRecent = new StreamReader($"./src/user/{username}.json");
+                StreamReader userdataRecent = new StreamReader($"./src/user/{Username}.json");
                 string userdataStringRecent = userdataRecent.ReadToEnd();
                 userdataRecent.Close();
                 JObject userdataJsonRecent = JObject.Parse(userdataStringRecent);
-                globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][convertMode(modeValue.Text)], 2) + "pp";
-                accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][convertMode(modeValue.Text)], 2) + "%";
-                BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][convertMode(modeValue.Text)], 2) + "pp";
-                playtimeValue.Text = (string)userdataJsonRecent["playtime"][convertMode(modeValue.Text)];
-                playcountValue.Text = (string)userdataJsonRecent["playcount"][convertMode(modeValue.Text)];
-                listBox1.Items.Clear();
-                if (userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count() == 0)
+                globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)], 2) + "pp";
+                accValue.Text = Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)], 2) + "%";
+                BonusPPValue.Text = Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)], 2) + "pp";
+                playtimeValue.Text = (string)userdataJsonRecent["playtime"][ConvertMode(modeValue.Text)];
+                playcountValue.Text = (string)userdataJsonRecent["playcount"][ConvertMode(modeValue.Text)];
+                BestPerformance.Items.Clear();
+                if (!(userdataJsonRecent["pp"][ConvertMode(modeValue.Text)] ?? throw new InvalidOperationException()).Any())
                 {
-                    listBox1.Items.Add("No plays.");
+                    BestPerformance.Items.Add("No plays.");
                     return;
                 }
 
-                listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
+                BestPerformance.Items.Add("-----------------------------------------------------------------------------------------------------------------");
 
-                for (int i = 0; i < userdataJsonRecent["pp"][convertMode(modeValue.Text)].Count(); i++)
+                for (int i = 0; i < (userdataJsonRecent["pp"][ConvertMode(modeValue.Text)] ?? throw new InvalidOperationException()).Count(); i++)
                 {
-                    string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["title"]}";
-                    string versionName = $"Mapper: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mapper"]}   Difficulty: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["version"]}";
+                    string itemTitle = $"Title: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["title"]}";
+                    string versionName = $"Mapper: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["mapper"]}   Difficulty: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["version"]}";
                     string hitsInfo = "";
-                    if (convertMode(modeValue.Text) == "osu" || convertMode(modeValue.Text) == "catch")
+                    switch (ConvertMode(modeValue.Text))
                     {
-                        hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
+                        case "osu":
+                            hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                            break;
+                        
+                        case "taiko":
+                            hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                            break;
+                        
+                        case "catch":
+                            hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                            break;
+                        
+                        case "mania":
+                            hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["geki"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["katu"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
+                            break;
                     }
-                    else if (convertMode(modeValue.Text) == "taiko")
-                    {
-                        hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                    }
-                    else if (convertMode(modeValue.Text) == "mania")
-                    {
-                        hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["geki"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["katu"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                    }
-                    else
-                    {
-                        hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["miss"]}}}";
-                    }
-
-                    string resultInfo = $"Score: {string.Format("{0:#,0}", (int)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["score"])} / {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["combo"]}x   {hitsInfo}";
-
-                    if (itemTitle.Length > 110)
-                    {
-                        itemTitle = itemTitle.Substring(0, 110) + "...";
-                    }
-
-                    if (versionName.Length > 110)
-                    {
-                        versionName = versionName.Substring(0, 110) + "...";
-                    }
-                    listBox1.Items.Add($"#{i + 1}");
-                    listBox1.Items.Add(itemTitle);
-                    listBox1.Items.Add(versionName);
-                    listBox1.Items.Add(resultInfo);
-                    listBox1.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][convertMode(modeValue.Text)][i]["pp"]}pp");
-                    listBox1.Items.Add("-----------------------------------------------------------------------------------------------------------------");
+                    
+                    if (itemTitle.Length > 110) itemTitle = itemTitle.Substring(0, 110) + "...";
+                    if (versionName.Length > 110) versionName = versionName.Substring(0, 110) + "...";
+                    
+                    string resultInfo = $"Score: {(int)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["score"]:#,0} / {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["combo"]}x   {hitsInfo}";
+                    BestPerformance.Items.Add($"#{i + 1}");
+                    BestPerformance.Items.Add(itemTitle);
+                    BestPerformance.Items.Add(versionName);
+                    BestPerformance.Items.Add(resultInfo);
+                    BestPerformance.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["pp"]}pp");
+                    BestPerformance.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                 }
             }
             catch
             {
-                listBox1.Items.Clear();
-                listBox1.Items.Add("No plays.");
+                BestPerformance.Items.Clear();
+                BestPerformance.Items.Add("No plays.");
                 globalPPValue.Text = "0pp";
                 accValue.Text = "0%";
                 BonusPPValue.Text = "0pp";
@@ -389,20 +344,17 @@ namespace osu_private
 
         private void deleteScore_Click(object sender, EventArgs e)
         {
-            if (!File.Exists($"./src/user/{username}.json"))
+            if (!File.Exists($"./src/user/{Username}.json"))
             {
                 MessageBox.Show("No scores found! \n The delete function will not be enabled until you create a user and create at least one score!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            new deleteForm().ShowDialog();
+            new DeleteForm().ShowDialog();
         }
 
         private void listBox1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape)
-            {
-                listBox1.ClearSelected();
-            }
+            if (e.KeyCode == Keys.Escape) BestPerformance.ClearSelected();
         }
     }
 }

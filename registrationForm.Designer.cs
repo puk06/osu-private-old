@@ -1,11 +1,14 @@
-﻿namespace osu_private
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace osu_private
 {
-    partial class registrationForm
+    partial class RegistrationForm
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -28,7 +31,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(registrationForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegistrationForm));
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.usernameForm = new System.Windows.Forms.ComboBox();
@@ -75,7 +78,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "registrationForm";
+            this.Name = "RegistrationForm";
             this.Text = "ユーザー名の選択";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -84,8 +87,8 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox usernameForm;
+        private Button button1;
+        private Label label1;
+        private ComboBox usernameForm;
     }
 }

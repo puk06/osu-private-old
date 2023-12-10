@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.Remoting.Channels;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace osu_private
@@ -11,31 +11,38 @@ namespace osu_private
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             if (Process.GetProcessesByName("osu!private").Length == 2)
             {
                 MessageBox.Show("osu!privateは既に起動しています。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-us");
-            System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("en-us");
+            CultureInfo.CurrentCulture = new CultureInfo("en-us");
+            CultureInfo.CurrentUICulture = new CultureInfo("en-us");
             Application.EnableVisualStyles();
             Application.ApplicationExit += (sender, args) =>
             {
                 try
                 {
-                    mainForm.osuPrivate.Kill();
-                    if (mainForm.gosumemoryLaunched) mainForm.gosumemory.Kill();
-                    Application.Exit();
+                    if (MainForm.Gosumemory != null && !MainForm.Gosumemory.HasExited) MainForm.Gosumemory.Kill();
                 }
-                catch
+                catch (Exception error)
                 {
-                    Application.Exit();
+                    MessageBox.Show($"gosumemoryの終了に失敗しました。\nエラー内容: {error}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                try
+                {
+                    if (MainForm.OsuPrivate != null && !MainForm.OsuPrivate.HasExited) MainForm.OsuPrivate.Kill();
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show($"osu!private.jsの終了に失敗しました。\nエラー内容: {error}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new registrationForm());
+            Application.Run(new RegistrationForm());
         }
     }
 }
