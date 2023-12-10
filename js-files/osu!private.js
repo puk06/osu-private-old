@@ -19,7 +19,7 @@ let endTime = null;
                 hasEnded = false;
                 endTime = new Date().getTime();
                 currentStatus = response.data.menu.state;
-                const BannedModstext = fs.readFileSync("bannedmods.txt", "utf-8");
+                const BannedModstext = fs.readFileSync("BannedMods.txt", "utf-8");
                 const BannedMods = BannedModstext.split(",").filter(mod => {
                     return mod != "" && mod.length == 2;
                 });
