@@ -36,7 +36,7 @@ let endTime = null;
                 }
                 if (bannedmodflag) continue;
 
-                const mappath = path.join(response.data.settings.folders.songs, response.data.menu.bm.path.folder, response.data.menu.bm.path.file)
+                const mappath = path.join(response.data.settings.folders.songs, response.data.menu.bm.path.folder, response.data.menu.bm.path.file);
                 const params = {
                     mode: response.data.menu.gameMode,
                     mods: response.data.menu.mods.num,
