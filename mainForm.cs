@@ -104,7 +104,6 @@ namespace osu_private
                     if (DateTime.Now.Ticks - _lastTick < 10000000 && !_firstTime) return;
                     if (_firstTime) _firstTime = false;
                     _lastTick = DateTime.Now.Ticks;
-                    
                     Invoke((MethodInvoker)delegate
                     {
                         StreamReader userdataRecent = new StreamReader($"./src/user/{username}.json");
@@ -180,6 +179,7 @@ namespace osu_private
                         BonusPp["taiko"] = (double)userdataJsonRecent["bonusPP"]["taiko"];
                         BonusPp["catch"] = (double)userdataJsonRecent["bonusPP"]["catch"];
                         BonusPp["mania"] = (double)userdataJsonRecent["bonusPP"]["mania"];
+                        if (timer.Enabled) timer.Stop();
                         timer.Start();
                     });
                 }
