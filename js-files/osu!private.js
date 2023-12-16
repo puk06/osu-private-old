@@ -1,10 +1,11 @@
 const { Beatmap, Calculator } = require("./node_modules/rosu-pp");
 const axios = require("./node_modules/axios");
-const md5 = require("./node_modules/md5");
-const path = require("path");
-const fs = require("fs");
+const crypto = require("node:crypto");
+const path = require("node:path");
+const fs = require("node:fs");
+
 let currentStatus = null;
-let currentMode = null;
+let currentMode = 0;
 let nowPlaying = false;
 let hasEnded = false;
 let startTime = null;
@@ -15,6 +16,10 @@ let endTime = null;
     while (true) {
         try {
             let response = await axios.get("http://127.0.0.1:24050/json");
+            
+            if (response.data.menu.state == 2) currentMode = response.data.gameplay.gameMode;
+            if (currentStatus == null) currentStatus = response.data.menu.state;
+
             if (currentStatus == 2 && response.data.menu.state == 7) {
                 hasEnded = false;
                 endTime = new Date().getTime();
@@ -24,17 +29,14 @@ let endTime = null;
                     return mod != "" && mod.length == 2;
                 });
                 const mod = response.data.menu.mods.str.match(/.{2}/g);
-                let bannedmodflag = false;
-                for (const resultMod of mod) {
-                    if (BannedMods.includes(resultMod)) {
-                        response = null;
-                        startTime = null;
-                        endTime = null;
-                        bannedmodflag = true;
-                        break;
-                    }
+                let bannedmodflag = mod.some(resultMod => BannedMods.includes(resultMod));
+                if (bannedmodflag) {
+                    startTime = null;
+                    endTime = null;
+                    currentStatus = response.data.menu.state;
+                    response = null;
+                    continue;
                 }
-                if (bannedmodflag) continue;
 
                 const mappath = path.join(response.data.settings.folders.songs, response.data.menu.bm.path.folder, response.data.menu.bm.path.file);
                 const params = {
@@ -49,7 +51,7 @@ let endTime = null;
                     combo: response.data.gameplay.combo.max
                 };
                 const pp = calculator(mappath, params);
-                const confirmHash = md5(fs.readFileSync(mappath, "utf-8"));
+                const confirmHash = crypto.createHash("md5").update(fs.readFileSync(mappath), "binary").digest("hex");
                 const data = {
                     "title" : response.data.menu.bm.metadata.title + " by " + response.data.menu.bm.metadata.artist,
                     "mapper": response.data.menu.bm.metadata.mapper,
@@ -68,7 +70,7 @@ let endTime = null;
                     "rank" : response.data.gameplay.hits.grade.current,
                     "date" : new Date().toLocaleString(),
                     "hash" : confirmHash
-                }
+                };
 
                 if (!fs.existsSync(userData)) {
                     fs.writeFileSync(userData, JSON.stringify({
@@ -141,7 +143,6 @@ let endTime = null;
                                 json.playcount[mode] += 1;
                                 json.lastGamemode = currentMode;
                                 fs.writeFileSync(userData, JSON.stringify(json, null, 4));
-                                response = null;
                                 startTime = null;
                                 endTime = null;
                                 continueflag = true;
@@ -149,25 +150,31 @@ let endTime = null;
                             }
                         }
                     }
-                    if (continueflag) continue;
+                    if (continueflag) {
+                        currentStatus = response.data.menu.state;
+                        response = null;
+                        continue;
+                    }
                     if (!flag) json.pp[mode].push(data);
                 } else {
                     json.pp[mode].push(data);
                 }
-                
+
                 json.pp[mode].sort((a, b) => {
                     return b.pp - a.pp;
                 });
-                
+
                 const bonusPP = calculateBonusPP(json, mode);
                 const globalPP = calculateGlobalPP(json, mode) + bonusPP;
                 const globalACC = calculateGlobalACC(json, mode);
+
                 if (startTime != null) {
                     const time = endTime - startTime;
                     const playtime = formatTime(json.playtimeCalculate[mode] + time);
                     json.playtime[mode] = playtime;
                     json.playtimeCalculate[mode] += time;
                 }
+
                 json.playcount[mode] += 1;
                 json.bonusPP[mode] = bonusPP;
                 json.globalPP[mode] = globalPP;
@@ -179,7 +186,7 @@ let endTime = null;
                 endTime = null;
             }
 
-            if (currentStatus == 5 && response.data.menu.state == 2) {
+            if ((currentStatus == 5 || currentStatus == 7) && response.data.menu.state == 2) {
                 nowPlaying = true;
             } else if (currentStatus == 2 && response.data.menu.state == 5) {
                 hasEnded = true;
@@ -196,21 +203,26 @@ let endTime = null;
                     startTime = null;
                     endTime = null;
                 } else {
-                    endTime = new Date().getTime()
+                    endTime = new Date().getTime();
+
                     if (endTime - startTime < 10000) {
                         startTime = null;
                         endTime = null;
+                        currentStatus = response.data.menu.state;
                         response = null;
                         continue;
                     }
+
                     let json = JSON.parse(fs.readFileSync(userData, "utf-8"));
                     const mode = modeConverter(currentMode);
+
                     if (startTime != null) {
                         const time = endTime - startTime;
                         const playtime = formatTime(json.playtimeCalculate[mode] + time);
                         json.playtime[mode] = playtime;
                         json.playtimeCalculate[mode] += time;
                     }
+
                     json.playcount[mode] += 1;
                     json.lastGamemode = currentMode;
                     fs.writeFileSync(userData, JSON.stringify(json, null, 4));
@@ -219,9 +231,8 @@ let endTime = null;
                     json = null;
                 }
             }
-
+            
             currentStatus = response.data.menu.state;
-            currentMode = response.data.menu.gameMode;
             response = null;
         } catch (e) {
             console.log(e);
