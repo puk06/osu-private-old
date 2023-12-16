@@ -36,6 +36,14 @@ namespace osu_private
             {
                 MessageBox.Show("登録したいユーザー名を入力してください。\nPlease enter a username you wanna set!", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            else if (IsInvalidFileName(usernameForm.Text))
+            {
+                MessageBox.Show("ユーザー名に使用できない文字が含まれています。\nInvalid characters are included in the username!", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else if (usernameForm.Text.Length > 20)
+            {
+                MessageBox.Show("ユーザー名はエラーを防ぐために20文字以内で入力してください。\nPlease enter a username within 20 characters!", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             else
             {
                 MainForm mainForm = new MainForm(usernameForm.Text);
@@ -63,8 +71,14 @@ namespace osu_private
             }
             catch
             {
-                MessageBox.Show("アップデートチェック中にエラーが発生しました", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("アップデートチェック中にエラーが発生しました。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        
+        private static bool IsInvalidFileName(string fileName)
+        {
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            return invalidChars.Any(fileName.Contains);
         }
     }
 }

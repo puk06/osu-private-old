@@ -111,10 +111,9 @@ namespace osu_private
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "DeleteForm";
-            this.Text = "Select a score";
+            this.Text = "削除するスコアの選択";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

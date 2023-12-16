@@ -39,7 +39,8 @@ namespace osu_private
             {"catch", 0},
             {"mania", 0}
         };
-
+        
+        private static readonly string[] GameModes = {"osu", "taiko", "catch", "mania"};
         private long _lastTick;
         private bool _firstTime = true;
         
@@ -60,18 +61,12 @@ namespace osu_private
                 BonusPPValue.Text = Math.Round((double)userdataJson["bonusPP"][ConvertMode(modeValue.Text)], 2) + "pp";
                 playtimeValue.Text = (string)userdataJson["playtime"][ConvertMode(modeValue.Text)];
                 playcountValue.Text = (string)userdataJson["playcount"][ConvertMode(modeValue.Text)];
-                GlobalPp["osu"] = (double)userdataJson["globalPP"]["osu"];
-                GlobalPp["taiko"] = (double)userdataJson["globalPP"]["taiko"];
-                GlobalPp["catch"] = (double)userdataJson["globalPP"]["catch"];
-                GlobalPp["mania"] = (double)userdataJson["globalPP"]["mania"];
-                GlobalAcc["osu"] = (double)userdataJson["globalACC"]["osu"];
-                GlobalAcc["taiko"] = (double)userdataJson["globalACC"]["taiko"];
-                GlobalAcc["catch"] = (double)userdataJson["globalACC"]["catch"];
-                GlobalAcc["mania"] = (double)userdataJson["globalACC"]["mania"];
-                BonusPp["osu"] = (double)userdataJson["bonusPP"]["osu"];
-                BonusPp["taiko"] = (double)userdataJson["bonusPP"]["taiko"];
-                BonusPp["catch"] = (double)userdataJson["bonusPP"]["catch"];
-                BonusPp["mania"] = (double)userdataJson["bonusPP"]["mania"];
+                foreach (var mode in GameModes)
+                {
+                    GlobalPp[mode] = (double)userdataJson["globalPP"][mode];
+                    GlobalAcc[mode] = (double)userdataJson["globalACC"][mode];
+                    BonusPp[mode] = (double)userdataJson["bonusPP"][mode];
+                }
             }
             catch
             {
@@ -81,9 +76,11 @@ namespace osu_private
                 playtimeValue.Text = "0h 0m";
                 playcountValue.Text = "0";
             }
-            
-            Timer timer = new Timer();
-            timer.Interval = 5000;
+
+            Timer timer = new Timer
+            {
+                Interval = 5000
+            };
             timer.Tick += (sendertick, etick) =>
             {
                 changePPValue.Text = "";
@@ -109,7 +106,6 @@ namespace osu_private
                         StreamReader userdataRecent = new StreamReader($"./src/user/{username}.json");
                         string userdataStringRecent = userdataRecent.ReadToEnd();
                         userdataRecent.Close();
-                        errorText.Text = "";
                         JObject userdataJsonRecent = JObject.Parse(userdataStringRecent);
                         modeValue.SelectedIndex = (int)userdataJsonRecent["lastGamemode"];
                         globalPPValue.Text = Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)], 2) + "pp";
@@ -118,6 +114,7 @@ namespace osu_private
                         playtimeValue.Text = (string)userdataJsonRecent["playtime"][ConvertMode(modeValue.Text)];
                         playcountValue.Text = (string)userdataJsonRecent["playcount"][ConvertMode(modeValue.Text)];
                         BestPerformance.Items.Clear();
+                        
                         if (!(userdataJsonRecent["pp"][ConvertMode(modeValue.Text)] ?? throw new InvalidOperationException()).Any())
                         {
                             BestPerformance.Items.Add("No plays.");
@@ -135,15 +132,15 @@ namespace osu_private
                                 case "osu":
                                     hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                                     break;
-                                
+
                                 case "taiko":
                                     hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                                     break;
-                                
+
                                 case "catch":
                                     hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                                     break;
-                                
+
                                 case "mania":
                                     hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["geki"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["katu"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                                     break;
@@ -151,7 +148,7 @@ namespace osu_private
 
                             if (itemTitle.Length > 110) itemTitle = itemTitle.Substring(0, 110) + "...";
                             if (versionName.Length > 110) versionName = versionName.Substring(0, 110) + "...";
-                            
+
                             string resultInfo = $"Score: {(int)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["score"]:#,0} / {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["combo"]}x   {hitsInfo}";
                             BestPerformance.Items.Add($"#{i + 1}");
                             BestPerformance.Items.Add(itemTitle);
@@ -160,28 +157,59 @@ namespace osu_private
                             BestPerformance.Items.Add($"Mod: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["mods"]}   Accuracy: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["acc"]}%   PP: {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["pp"]}pp");
                             BestPerformance.Items.Add("-----------------------------------------------------------------------------------------------------------------");
                         }
-                        changePPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2))}pp";
-                        changePPValue.ForeColor = Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2) >= 0 ? Color.ForestGreen : Color.Red;
-                        changeACCValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2))}%";
-                        changeACCValue.ForeColor = Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2) >= 0 ? Color.ForestGreen : Color.Red;
-                        changeBonusPPValue.Text = Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2)) == 0 ? "" : $"{(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2))}pp";
-                        changeBonusPPValue.ForeColor = Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2) >= 0 ? Color.ForestGreen : Color.Red;
 
-                        GlobalPp["osu"] = (double)userdataJsonRecent["globalPP"]["osu"];
-                        GlobalPp["taiko"] = (double)userdataJsonRecent["globalPP"]["taiko"];
-                        GlobalPp["catch"] = (double)userdataJsonRecent["globalPP"]["catch"];
-                        GlobalPp["mania"] = (double)userdataJsonRecent["globalPP"]["mania"];
-                        GlobalAcc["osu"] = (double)userdataJsonRecent["globalACC"]["osu"];
-                        GlobalAcc["taiko"] = (double)userdataJsonRecent["globalACC"]["taiko"];
-                        GlobalAcc["catch"] = (double)userdataJsonRecent["globalACC"]["catch"];
-                        GlobalAcc["mania"] = (double)userdataJsonRecent["globalACC"]["mania"];
-                        BonusPp["osu"] = (double)userdataJsonRecent["bonusPP"]["osu"];
-                        BonusPp["taiko"] = (double)userdataJsonRecent["bonusPP"]["taiko"];
-                        BonusPp["catch"] = (double)userdataJsonRecent["bonusPP"]["catch"];
-                        BonusPp["mania"] = (double)userdataJsonRecent["bonusPP"]["mania"];
+                        changePPValue.Text =
+                            Math.Abs(Math.Round(
+                                (double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] -
+                                GlobalPp[ConvertMode(modeValue.Text)], 2)) == 0
+                                ? ""
+                                : $"{(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] - GlobalPp[ConvertMode(modeValue.Text)], 2))}pp";
+                        changePPValue.ForeColor =
+                            Math.Round(
+                                (double)userdataJsonRecent["globalPP"][ConvertMode(modeValue.Text)] -
+                                GlobalPp[ConvertMode(modeValue.Text)], 2) >= 0
+                                ? Color.ForestGreen
+                                : Color.Red;
+                        changeACCValue.Text =
+                            Math.Abs(Math.Round(
+                                (double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] -
+                                GlobalAcc[ConvertMode(modeValue.Text)], 2)) == 0
+                                ? ""
+                                : $"{(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] - GlobalAcc[ConvertMode(modeValue.Text)], 2))}%";
+                        changeACCValue.ForeColor =
+                            Math.Round(
+                                (double)userdataJsonRecent["globalACC"][ConvertMode(modeValue.Text)] -
+                                GlobalAcc[ConvertMode(modeValue.Text)], 2) >= 0
+                                ? Color.ForestGreen
+                                : Color.Red;
+                        changeBonusPPValue.Text =
+                            Math.Abs(Math.Round(
+                                (double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] -
+                                BonusPp[ConvertMode(modeValue.Text)], 2)) == 0
+                                ? ""
+                                : $"{(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2) >= 0 ? "+" : "-")} {Math.Abs(Math.Round((double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] - BonusPp[ConvertMode(modeValue.Text)], 2))}pp";
+                        changeBonusPPValue.ForeColor =
+                            Math.Round(
+                                (double)userdataJsonRecent["bonusPP"][ConvertMode(modeValue.Text)] -
+                                BonusPp[ConvertMode(modeValue.Text)], 2) >= 0
+                                ? Color.ForestGreen
+                                : Color.Red;
+                        
+                        foreach (var mode in GameModes)
+                        {
+                            GlobalPp[mode] = (double)userdataJsonRecent["globalPP"][mode];
+                            GlobalAcc[mode] = (double)userdataJsonRecent["globalACC"][mode];
+                            BonusPp[mode] = (double)userdataJsonRecent["bonusPP"][mode];
+                        }
+                        
                         if (timer.Enabled) timer.Stop();
                         timer.Start();
+                        errorText.Text = "";
                     });
+                }
+                catch (InvalidOperationException)
+                {
+                    errorText.Text = "※ファイルの読み込み中にエラーが発生しました。ファイルが破損している可能性があります。";
                 }
                 catch
                 {
@@ -203,10 +231,9 @@ namespace osu_private
                             "エラー", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                         if (result == DialogResult.Yes)
                         {
-                            MessageBox.Show(
-                                "ダウンロードページをwebブラウザで開きます。\nインストール方法: ダウンロードしたフォルダを開き、osu!trainer/src/gosumemory/gosumemory.exeとなるように配置する。",
-                                "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("ダウンロードページをwebブラウザで開きます。\nインストール方法: ダウンロードしたフォルダを開き、./src/gosumemory/gosumemory.exeとなるように配置する。config.iniも同じ場所に入れてください。", "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             Process.Start("https://github.com/l3lackShark/gosumemory/releases/");
+                            Application.Exit();
                             return;
                         }
                         Application.Exit();
@@ -286,6 +313,7 @@ namespace osu_private
                 playtimeValue.Text = (string)userdataJsonRecent["playtime"][ConvertMode(modeValue.Text)];
                 playcountValue.Text = (string)userdataJsonRecent["playcount"][ConvertMode(modeValue.Text)];
                 BestPerformance.Items.Clear();
+                
                 if (!(userdataJsonRecent["pp"][ConvertMode(modeValue.Text)] ?? throw new InvalidOperationException()).Any())
                 {
                     BestPerformance.Items.Add("No plays.");
@@ -304,23 +332,23 @@ namespace osu_private
                         case "osu":
                             hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                             break;
-                        
+
                         case "taiko":
                             hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                             break;
-                        
+
                         case "catch":
                             hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                             break;
-                        
+
                         case "mania":
                             hitsInfo = $"Hits: {{{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["geki"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["300"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["katu"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["100"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["50"]}/{(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["miss"]}}}";
                             break;
                     }
-                    
+
                     if (itemTitle.Length > 110) itemTitle = itemTitle.Substring(0, 110) + "...";
                     if (versionName.Length > 110) versionName = versionName.Substring(0, 110) + "...";
-                    
+
                     string resultInfo = $"Score: {(int)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["score"]:#,0} / {(string)userdataJsonRecent["pp"][ConvertMode(modeValue.Text)][i]["combo"]}x   {hitsInfo}";
                     BestPerformance.Items.Add($"#{i + 1}");
                     BestPerformance.Items.Add(itemTitle);
@@ -346,7 +374,7 @@ namespace osu_private
         {
             if (!File.Exists($"./src/user/{Username}.json"))
             {
-                MessageBox.Show("No scores found! \n The delete function will not be enabled until you create a user and create at least one score!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("スコアが見つかりませんでした。 \n 削除機能は新しくユーザーを作成してから１つ記録を作ることで有効化されます。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             new DeleteForm().ShowDialog();

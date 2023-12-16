@@ -18,13 +18,13 @@ namespace osu_private
 
         private void deleteButton_Click(object sender, EventArgs e)
         {
-            if (scoreList.Text == "")
+            if (string.IsNullOrEmpty(scoreList.Text))
             {
-                MessageBox.Show("Select a score!", "Delete", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("スコアを選択してください！", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             
-            DialogResult result = MessageBox.Show($"Are you sure you want to delete this score?\n\n Score: {scoreList.Items[scoreList.SelectedIndex]}", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+            DialogResult result = MessageBox.Show($"本当にこのスコアを削除してもよろしいですか？\n\n スコア: {scoreList.Items[scoreList.SelectedIndex]}", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
             if (result == DialogResult.Yes)
             {
                 try
@@ -39,17 +39,17 @@ namespace osu_private
                     StreamWriter sw = new StreamWriter(@"./src/user/" + MainForm.Username + ".json", false, new UTF8Encoding(false));
                     sw.Write(jo.ToString(Formatting.Indented));
                     sw.Close();
-                    MessageBox.Show("Successfully deleted", "Delete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("削除が完了しました！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Hide();
                 }
                 catch
                 {
-                    MessageBox.Show("Failed to delete", "Delete", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("削除に失敗しました。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Canceled!", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("キャンセルしました。", "キャンセル", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -82,7 +82,8 @@ namespace osu_private
             }
             catch
             {
-                MessageBox.Show("Failed to load scores", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("スコアの読み込み中にエラーが発生しました。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Hide();
             }
         }
     }
