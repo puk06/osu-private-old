@@ -1,0 +1,26 @@
+This software uses the following third-party libraries:
+
+- Microsoft.CSharp (.NET Runtime)
+  https://github.com/dotnet/runtime  
+  Licensed under the MIT License  
+  https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
+
+- Octokit.NET
+  https://github.com/octokit/octokit.net  
+  Licensed under the MIT License  
+  https://github.com/octokit/octokit.net/blob/main/LICENSE
+
+- Newtonsoft.Json
+  https://github.com/JamesNK/Newtonsoft.Json  
+  Licensed under the MIT License  
+  https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md
+
+- rosu-pp-js
+  https://github.com/MaxOhn/rosu-pp-js
+  Licensed under the MIT License 
+  https://github.com/MaxOhn/rosu-pp-js/blob/main/LICENSE
+
+- Gosumemory
+  https://github.com/l3lackShark/gosumemory
+  Licensed inder the GNU General Public License v3.0
+  https://github.com/l3lackShark/gosumemory/blob/master/LICENSE
